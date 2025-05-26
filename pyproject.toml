@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "fin-breaker"
+version = "0.1.0"
+description = "Morning news breaker for finance!"
+authors = ["Abhay Shukla <abhayshuklaistheone@gmail.com>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.12"
+uvicorn = "^0.34.2"
+streamlit = "^1.45.1"
+yfinance = "^0.2.61"
+beautifulsoup4 = "^4.13.4"
+sentence-transformers = "^4.1.0"
+faiss-cpu = "^1.11.0"
+langchain = "^0.3.25"
+deepgram-sdk = "^4.1.0"
+pyttsx3 = "^2.98"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
