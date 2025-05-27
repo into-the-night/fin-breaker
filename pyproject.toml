@@ -18,6 +18,7 @@ faiss-cpu = "^1.11.0"
 langchain = "^0.3.25"
 deepgram-sdk = "^4.1.0"
 pyttsx3 = "^2.98"
+langchain-community = "^0.3.24"
 
 
 [build-system]

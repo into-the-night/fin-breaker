@@ -1,5 +1,8 @@
-# Environments
+# Environments Variable files
 .env
+
+# Venv files
+.venv
 
 # Python generated files
 __pycache__/

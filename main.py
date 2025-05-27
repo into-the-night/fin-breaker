@@ -6,6 +6,10 @@ from agents.retriever_agent import router as retriever_router
 from agents.analysis_agent import router as analysis_router
 from agents.language_agent import router as language_router
 from agents.voice_agent import router as voice_router
+from utils.logging_config import setup_logging
+
+# Call this at the top of your main.py or app entry point
+setup_logging()
 
 app = FastAPI(title="Multi-Agent Finance Assistant")
 
