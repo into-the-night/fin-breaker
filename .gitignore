@@ -4,5 +4,8 @@
 # Venv files
 .venv
 
+# Logging
+*.log
+
 # Python generated files
 __pycache__/

@@ -12,7 +12,14 @@ import logging
 
 router = APIRouter(prefix="/retriever", tags=["Retriever Agent"])
 
-embeddings = HuggingFaceEmbeddings()
+model_name = "sentence-transformers/all-mpnet-base-v2"  
+model_kwargs = {'device': 'cpu'}  
+encode_kwargs = {'normalize_embeddings': False}
+embeddings = HuggingFaceEmbeddings(  
+model_name=model_name,  
+model_kwargs=model_kwargs,  
+encode_kwargs=encode_kwargs  
+)
 # Get embedding size correctly (HuggingFaceEmbeddings returns a list)
 test_emb = embeddings.embed_query("test")
 embedding_size = len(test_emb)

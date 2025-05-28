@@ -7,6 +7,7 @@ from agents.analysis_agent import router as analysis_router
 from agents.language_agent import router as language_router
 from agents.voice_agent import router as voice_router
 from utils.logging_config import setup_logging
+from orchestrator.orchestrator import router as orchestrator_router
 
 # Call this at the top of your main.py or app entry point
 setup_logging()
@@ -20,6 +21,7 @@ app.include_router(retriever_router)
 app.include_router(analysis_router)
 app.include_router(language_router)
 app.include_router(voice_router)
+app.include_router(orchestrator_router)
 
 @app.get("/")
 def root():
