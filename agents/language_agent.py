@@ -3,8 +3,6 @@
 
 from fastapi import APIRouter, Query
 from google import genai
-from langchain.chains import RetrievalQA
-from langchain.schema import Document
 
 from pydantic import BaseModel
 from utils.config import Config
