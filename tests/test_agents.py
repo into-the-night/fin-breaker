@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-from agents.api_agent import router as api_router
-from agents.voice_agent import router as voice_router
+from services.market_data import router as api_router
+from services.voice import router as voice_router
 from main import app
 
 app.include_router(api_router)

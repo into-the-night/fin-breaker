@@ -2,12 +2,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from agents.api_agent import router as api_router
-from agents.scraping_agent import router as scraping_router
-from agents.retriever_agent import router as retriever_router
-from agents.analysis_agent import router as analysis_router
-from agents.language_agent import router as language_router
-from agents.voice_agent import router as voice_router
+from services.market_data import router as api_router
+from services.scraping_agent import router as scraping_router
+from services.retrieval import router as retriever_router
+from services.analysis_agent import router as analysis_router
+from services.synthesis import router as language_router
+from services.voice import router as voice_router
 from utils.logging_config import setup_logging
 from orchestrator.orchestrator import router as orchestrator_router
 

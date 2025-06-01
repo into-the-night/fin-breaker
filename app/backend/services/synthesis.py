@@ -4,26 +4,19 @@
 from fastapi import APIRouter, Query
 from google import genai
 
-from pydantic import BaseModel
+from typing import List
 from utils.config import Config
 import logging
 
-router = APIRouter(prefix="/language", tags=["Language Agent"])
 
 llm = genai.Client(api_key=Config.GOOGLE_API_KEY)
 logger = logging.getLogger("finbreaker")
 
-class SynthesizeRequest(BaseModel):
-    question: str
-    context: list
 
-
-@router.post("/synthesize")
-def synthesize(
-    request: SynthesizeRequest
-):
-    question = request.question
-    context = request.context
+def synthesize_with_context(
+    question: str,
+    context: List[str]
+)-> str:
 
     logger.info(f"Synthesizing answer for question: {question}")
     # Construct a more instructive prompt for the LLM
@@ -39,8 +32,4 @@ def synthesize(
     )
     answer = response.text
     logger.info(f"Answer synthesized: {answer}")
-    return {"answer": answer}
-
-@router.get("/")
-def root():
-    return {"status": "Language Agent running"}
+    return answer
