@@ -14,7 +14,7 @@ logger = logging.getLogger("finbreaker")
 
 def search_ticker(company_name: str) -> Dict[str]:
     """
-    Search for the most relevant ticker symbol for a given company name using Alpha Vantage SYMBOL_SEARCH API.
+    Search for the most relevant ticker symbol for a given company name.
     
     Args:
         company_name (str): Name of the company to search for.
@@ -57,12 +57,12 @@ def fetch_time_series_market_data(ticker: str, period: str = "1d", interval: str
     Fetch real-time and historical market data for a given ticker symbol
     
     Args:
-    ticker (str): ticker symbol for the company
-    period (str): time period
-    interval (str): time interval
+        ticker (str): ticker symbol for the company
+        period (str): time period
+        interval (str): time interval
 
     Returns:
-    dict : ticker's time series market data
+        dict : ticker's time series market data
     """
     logger.info(f"Fetching market data for {ticker} (period={period}, interval={interval}")
 
@@ -96,10 +96,10 @@ def fetch_earnings(ticker: str) -> Dict:
     Fetch earnings data for a given ticker symbol.
     
     Args:
-    ticker (str): ticker symbol for the company
+        ticker (str): ticker symbol for the company
 
     Returns:
-    dict : ticker's earnings data
+        dict : ticker's earnings data
     """
     logger.info(f"Fetching earnings for {ticker}")
     stock = yf.Ticker(ticker)
@@ -116,12 +116,12 @@ def fetch_company_news(ticker: str) -> Dict:
     Fetch market news for a given ticker symbol (eg. GOOGL, AAPL etc)
     
     Args:
-    ticker (str): topic ticker that news data is required for
+        ticker (str): topic ticker that news data is required for
 
     Returns:
-    dict: news data from the tickers 
+        dict: news data from the tickers 
     """
-    logger.info(f"Fetching market data for {ticker})")
+    logger.info(f"Fetching news data for symbol: {ticker})")
     params = {
         "function": "NEWS_SENTIMENT",
         "tickers": ticker,
@@ -167,7 +167,7 @@ def fetch_topic_news(tickers: List[str]) -> Dict:
         dict: news data from the tickers 
 
     """
-    logger.info(f"Fetching market data for {tickers})")
+    logger.info(f"Fetching news data for topic: {tickers})")
 
     ticker_names = [
         "blockchain",
@@ -205,3 +205,25 @@ def fetch_topic_news(tickers: List[str]) -> Dict:
     except requests.RequestException as e:
         return {"error": "No data found"}
 
+
+def fetch_stock_trends(ticker: str) -> Dict:
+    """
+    Fetch recommendation trends for a given ticker symbol (eg. GOOGL, AAPL etc)
+    
+    Args:
+        ticker (str): topic ticker that trends data is required for
+
+    Returns:
+        dict: trends data from the tickers 
+    """
+    logger.info(f"Fetching stock trends data for {ticker})")
+
+    try:
+        response = requests.get(f"https://finnhub.io/api/v1/stock/recommendation?symbol={ticker}&token={Config.FINNHUB_API_KEY}")
+        response.raise_for_status()
+        data = response.json()
+        logger.info(f"News data fetched for {ticker}")
+        return data
+
+    except requests.RequestException as e:
+        return {"error": "No data found"}
