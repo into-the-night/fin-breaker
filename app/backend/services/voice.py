@@ -8,7 +8,7 @@ logger = logging.getLogger("finbreaker")
 
 router = APIRouter(prefix="/voice", tags=["Voice Agent"])
 
-@router.post("/transcribe")
+
 def transcribe(audio: UploadFile = File(...)):
     logger.info("Received audio for transcription.")
     from faster_whisper import WhisperModel

@@ -29,7 +29,9 @@ vector_store = FAISS(embeddings.embed_query, index, docstore, {})
 
 logger = logging.getLogger("finbreaker")
 
-@router.post("/index")
+class EmbeddingService:
+    def __init__(self):
+        
 def index_documents(docs: List[str]):
     logger.info(f"Indexing {len(docs)} documents.")
     doc_objs = [Document(page_content=doc) for doc in docs]

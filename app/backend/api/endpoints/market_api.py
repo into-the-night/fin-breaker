@@ -1,15 +1,18 @@
 # API Agent
 # Handles polling of real-time & historical market data
 
-from fastapi import APIRouter
-from services.market_data import fetch_earnings, fetch_company_news, fetch_time_series_market_data, search_ticker, fetch_topic_news
+from fastapi import APIRouter, Depends
+from services.market_data import MarketService, get_market_service
 from app.backend.api.schema import MarketDataRequest, EarningsRequest, CompanyNewsRequest, TickerSearchRequest, TopicNewsRequest
 
 router = APIRouter(prefix="/api", tags=["Market API"])
 
 @router.post("/market_data")
-def get_market_data(request: MarketDataRequest):
-    return fetch_time_series_market_data(
+def get_market_data(
+    request: MarketDataRequest,
+    market_service: MarketService = Depends(get_market_service)
+    ):
+    return market_service.fetch_time_series_market_data(
         ticker=request.ticker,
         period=request.period,
         interval=request.interval,
@@ -17,20 +20,32 @@ def get_market_data(request: MarketDataRequest):
     )
 
 @router.post("/earnings")
-def get_earnings(request: EarningsRequest):
-    return fetch_earnings(request.ticker)
+def get_earnings(
+    request: EarningsRequest,
+    market_service: MarketService = Depends(get_market_service)
+    ):
+    return market_service.fetch_earnings(request.ticker)
 
 @router.post("/company_news")
-def get_company_news(request: CompanyNewsRequest):
-    return fetch_company_news(request.ticker)
+def get_company_news(
+    request: CompanyNewsRequest,
+    market_service: MarketService = Depends(get_market_service)
+    ):
+    return market_service.fetch_company_news(request.ticker)
 
 @router.post("/search_ticker")
-def search_ticker(request: TickerSearchRequest):
-    return search_ticker(request.company_name)
+def search_ticker(
+    request: TickerSearchRequest,
+    market_service: MarketService = Depends(get_market_service)
+    ):
+    return market_service.search_ticker(request.company_name)
 
 @router.post("/topic_news")
-def get_topic_news(request: TopicNewsRequest):
-    return fetch_topic_news(request.tickers)
+def get_topic_news(
+    request: TopicNewsRequest,
+    market_service: MarketService = Depends(get_market_service)
+    ):
+    return market_service.fetch_topic_news(request.tickers)
     
 @router.get("/")
 def root():
