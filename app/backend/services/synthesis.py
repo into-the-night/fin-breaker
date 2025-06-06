@@ -1,13 +1,11 @@
 # Language Agent
 # Handles LLM-based narrative synthesis
 
-from fastapi import APIRouter, Query
-from google import genai
-
+from functools import lru_cache
 from typing import List
 from utils.config import Config
+from google import genai
 import logging
-
 
 logger = logging.getLogger("finbreaker")
 
@@ -36,3 +34,8 @@ class LLM:
         answer = response.text
         logger.info(f"Answer synthesized: {answer}")
         return answer
+
+
+@lru_cache
+def get_llm_service() -> LLM:
+    return LLM()

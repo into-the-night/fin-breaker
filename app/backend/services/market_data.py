@@ -13,7 +13,7 @@ ALPHAVANTAGE_URL = "https://www.alphavantage.co/query"
 logger = logging.getLogger("finbreaker")
 
 
-class MarketService:
+class MarketDataService:
 
     def search_ticker(company_name: str) -> Dict[str]:
         """
@@ -233,5 +233,5 @@ class MarketService:
     
 
 @lru_cache
-def get_market_service() -> MarketService:
-    return MarketService()
+def get_market_data() -> MarketDataService:
+    return MarketDataService()
