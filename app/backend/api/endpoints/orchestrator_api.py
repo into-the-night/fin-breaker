@@ -1,44 +1,63 @@
 from fastapi import APIRouter, Request
 import requests
+from typing import List
 from crewai import Crew, Agent, Task, LLM
 from crewai.tools import tool
 import logging
+from app.backend.services.market_data import MarketDataService
+from app.backend.services.retrieval import VectorStoreService
 
 router = APIRouter(prefix="/orchestrator", tags=["Orchestrator"])
 logger = logging.getLogger("finbreaker")
 
-# Define CrewAI tools for each microservice using @tool decorator
+vector_store = VectorStoreService()
+
+
 @tool("Market Data")
-def market_data_tool(ticker: str):
-    """Fetch real-time and historical market data for a given ticker symbol using the API agent."""
-    return requests.get(f"http://localhost:8000/api/market_data?ticker={ticker}").json()
+def market_data_tool(ticker: str, period: str = "1d", interval: str = "1d"):
+    """Fetch real-time and historical market data for a given ticker symbol."""
+    return MarketDataService.fetch_time_series_market_data(
+        ticker=ticker,
+        period=period,
+        interval=interval,
+    )
 
-@tool("Filings Scraper")
-def filings_scraper_tool(ticker: str):
-    """Fetch the latest SEC or company filings for a given ticker symbol using the scraping agent."""
-    return requests.get(f"http://localhost:8000/scraping/filing?ticker={ticker}").json()
+@tool("Earnings")
+def earnings_tool(ticker: str):
+    """Fetch earnings data for a given ticker symbol."""
+    return MarketDataService.fetch_earnings(ticker)
 
-@tool("Risk Analysis")
-def risk_analysis_tool(region: str, sector: str, allocations: list = None):
-    """Analyze risk exposure for a given region and sector using the analysis agent."""
-    if allocations is None:
-        allocations = []
-    return requests.post(
-        "http://localhost:8000/analysis/risk_exposure",
-        json={"region": [region], "sector": [sector], "allocations": allocations}
-    ).json()
+@tool("Company News")
+def company_news_tool(ticker: str):
+    """Fetch company news for a given ticker symbol."""
+    return MarketDataService.fetch_company_news(ticker)
+
+@tool("Ticker Search")
+def ticker_search_tool(company_name: str):
+    """Search for the most relevant ticker symbol for a given company name."""
+    return MarketDataService.search_ticker(company_name)
+
+@tool("Topic News")
+def topic_news_tool(tickers: List[str]):
+    """Fetch market news for given topic tickers."""
+    return MarketDataService.fetch_topic_news(tickers)
+
+@tool("Index Data")
+def index_data(docs: List[str]):
+    """Indexes the market data in a vector store to be used for querying."""
+    return vector_store.index_documents(docs)
 
 @tool("Retriever")
-def retriever_tool(query: str):
-    """Retrieve relevant indexed financial documents for a given query using the retriever agent."""
-    return requests.get(f"http://localhost:8000/retriever/retrieve?query={query}").json()
+def retriever_tool(query: str, max_results: int = 3):
+    """Retrieve relevant indexed financial documents for a given query using the vector store."""
+    return vector_store.retrieve(query, max_results)
 
 
 orchestrator_agent = Agent(
     role="Market Analyst Agent",
     goal="Answer complex finance questions using all available tools.",
     backstory="You are an expert financial analyst with access to market data, filings, analytics, and document retrieval.",
-    tools=[market_data_tool, filings_scraper_tool, risk_analysis_tool, retriever_tool]
+    tools=[ticker_search_tool, market_data_tool, earnings_tool, company_news_tool, topic_news_tool, index_data, retriever_tool]
 )
 
 tasks = [
