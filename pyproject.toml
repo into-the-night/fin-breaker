@@ -21,6 +21,7 @@ python-multipart = "^0.0.20"
 crewai = "^0.121.1"
 langchain = "^0.3.25"
 langchain-community = "^0.3.24"
+langgraph = "^0.4.8"
 
 
 [build-system]
