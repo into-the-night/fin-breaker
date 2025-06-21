@@ -99,7 +99,7 @@ class LLMService:
             logger.error(f"Error generating response with {model}: {str(e)}")
             raise
 
-    def synthesize_with_context(
+    async def synthesize_with_context(
         self,
         question: str,
         context: List[str]
@@ -114,43 +114,67 @@ class LLMService:
             "Highlight risk exposure, key numbers, and any earnings surprises.\n\n"
             f"Context:\n{'\n'.join(context)}\n\nQuestion: {question}\n\nAnswer:"
         )
-        response = self.generate(
+        response = await self.generate(
             model='gemini-2.0-flash-001',
-            messages={
+            messages=[{
                 "role": "user",
                 "content" : prompt
-            },
+            }],
         )
-        answer = response.text
+        answer = response.content[0].text
         logger.info(f"Answer synthesized: {answer}")
         return answer
     
 
-    def generate_plan(
+    async def generate_plan(
         self,
         question: str,
         tools: List[Dict[str, Any]]
-    )-> str:
-        prompt = (
-            "You are a financial analyst assistant. You have access to the following tools: {tool_names} "
-            "Given the following question and tools, "
-            "generate a plan for the user's question if it can be answered with the tools provided. "
-            "If the question cannot be answered with the tools provided or is irrelevant to Financial Analysis, just answer something like 'I'm sorry, I can't answer that question.' "
-            "The plan MUST consist of a list of tools to use and the arguments to pass to each tool. "
-            "You must also generate a query or a list of queries that you want to infer from the tool results."
-            "The queries must be in the following format: "
-        )
-        prompt =  prompt.format(tool_names=[tool["name"] for tool in tools])
-        result = self.generate(
-            model='gemini-2.0-flash-001',
-            messages={
+    )-> Result:
+        tool_names = [t['function_declaration']['name'] for t in tools]
+        system_prompt = (
+            "You are a financial analyst assistant. You have access to the following tools: {tool_names}. "
+            "Given the user's question, decide which tools to call to answer it. "
+            "If the question cannot be answered with the tools provided or is irrelevant to Financial Analysis, you can respond with 'I can't answer that question.' "
+            "Otherwise, respond with one or more tool calls."
+        ).format(tool_names=", ".join(tool_names))
+
+        result = await self.generate(
+            model='gemini-2.5-pro-latest',
+            messages=[{
                 "role": "user",
                 "content" : question
-            },
+            }],
             tools=tools,
-            system=prompt,
+            system=system_prompt,
         )
         return result
+
+    async def evaluate_context(
+        self,
+        question: str,
+        context: List[str]
+    ) -> str:
+        logger.info(f"Evaluating context for question: {question}")
+        prompt = (
+            "You are a financial analyst assistant. "
+            "Given the following context and a user's question, "
+            "evaluate if the context contains enough information to answer the question comprehensively. "
+            "Respond with 'CONTINUE' if the context is sufficient, or 'REPLAN' if more information is needed which would require another tool call.\n\n"
+            f"Context:\n{'-'*80}\n{'\n'.join(context)}\n{'-'*80}\n\nQuestion: {question}\n\n"
+            "Evaluation (CONTINUE or REPLAN):"
+        )
+        response = await self.generate(
+            model='gemini-2.5-pro-latest',
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }],
+            temperature=0,
+        )
+        evaluation = response.content[0].text.strip()
+        logger.info(f"Evaluation result: {evaluation}")
+        return evaluation
 
 @lru_cache
 def get_llm_service() -> LLMService:
