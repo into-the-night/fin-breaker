@@ -6,6 +6,7 @@ from crewai.tools import tool
 import logging
 from app.backend.services.market_data import MarketDataService
 from app.backend.services.retrieval import VectorStoreService
+from app.backend.services.synthesis import LLMService
 
 router = APIRouter(prefix="/orchestrator", tags=["Orchestrator"])
 logger = logging.getLogger("finbreaker")
@@ -77,31 +78,19 @@ crew = Crew(
     llm=llm
 )
 
-# Example orchestrator endpoint: voice input -> STT -> analysis -> TTS
+
 @router.post("/morning_brief")
 async def morning_brief(request: Request):
     """Orchestrate the full multi-agent workflow: transcribe audio (if needed), run CrewAI agents for market data, filings, risk analysis, and retrieval, then synthesize a final answer using the language agent and return both text and TTS audio."""
     data = await request.json()
-    # Accept either text or audio (for demo, focus on text)
     question = data.get("question")
-    if not question:
-        # If audio, transcribe first
-        audio_bytes = data.get("audio")
-        stt_resp = requests.post("http://localhost:8000/voice/transcribe", files={"audio": ("audio.wav", audio_bytes, "audio/wav")})
-        question = stt_resp.json().get("transcript", "")
     logger.info(f"Received question for morning brief: {question}")
 
-    results = crew.kickoff()
+    results = 
     # Synthesize a final answer using the language agent
     context_chunks = [str(r) for r in results]
-    synth_resp = requests.post(
-        "http://localhost:8000/language/synthesize",
-        json={"question": question, "context": context_chunks}
-    )
-    answer = synth_resp.json().get("answer", "No answer.")
-    tts_resp = requests.post("http://localhost:8000/voice/speak", json={"text": answer})
-    audio_out = tts_resp.json().get("audio", None)
-    return {"transcript": question, "answer": answer, "audio": audio_out}
+    answer = LLMService.synthesize_with_context(question, context_chunks)
+    return {"transcript": question, "answer": answer}
 
 @router.get("/")
 def root():
