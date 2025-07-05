@@ -1,7 +1,5 @@
 # FinBreaker: Multi-Agent Finance Assistant
 
-![FinBreaker Banner](docs/architecture.png)
-
 ## Overview 🔍
 FinBreaker is an open-source, multi-agent finance assistant that delivers spoken and written market briefs.
 
@@ -74,19 +72,12 @@ fin-breaker/
 
 ## Frameworks & Toolkits 🛠
 - **FastAPI**: Microservices for each agent
-- **CrewAI**: Multi-agent orchestration
 - **LangChain**: RAG, vector search, LLM integration
 - **Streamlit**: Frontend UI
 - **FAISS**: Vector store for document retrieval
 - **HuggingFace**: Embeddings
 - **Whisper/faster-whisper**: Speech-to-text
-- **pyttsx3/Coqui TTS**: Text-to-speech
-
----
-
-## Deployment ⛵
-- **Docker**: Build and run with the provided Dockerfile for easy deployment.
-- **Streamlit Cloud**: Deploy the UI for public access.
+- **Deepgram**: Text-to-speech
 
 ---
 
