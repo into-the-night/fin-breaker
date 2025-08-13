@@ -1,9 +1,9 @@
 # Market Tools
 # Handles polling of real-time & historical market data
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from functools import lru_cache
-from utils.config import Config
+from app.backend.utils.config import Config
 import yfinance as yf
 import requests
 import logging
@@ -15,14 +15,12 @@ logger = logging.getLogger("finbreaker")
 
 class MarketDataService:
 
-    def search_ticker(company_name: str) -> Dict[str]:
+    def search_ticker(self, company_name: str) -> Dict[str, str]:
         """
         Search for the most relevant ticker symbol for a given company name.
         
         Args:
             company_name (str): Name of the company to search for.
-            api_key (str): Your Alpha Vantage API key.
-        
         Returns:
             dict: The most relevant result (symbol, name, region), or None if not found.
         """
@@ -55,7 +53,7 @@ class MarketDataService:
             return None
 
 
-    def fetch_time_series_market_data(ticker: str, period: str = "1d", interval: str = "1d") -> Dict[str]:
+    def fetch_time_series_market_data(self, ticker: str, period: str = "1d", interval: str = "1d") -> Dict[str, Any]:
         """
         Fetch real-time and historical market data for a given ticker symbol
         
@@ -94,7 +92,7 @@ class MarketDataService:
                 return {"error": "No data found"}
 
             
-    def fetch_earnings(ticker: str) -> Dict:
+    def fetch_earnings(self, ticker: str) -> Dict[str, Any]:
         """
         Fetch earnings data for a given ticker symbol.
         
@@ -114,7 +112,7 @@ class MarketDataService:
         return {"error": "No earnings data found"}
 
 
-    def fetch_company_news(ticker: str) -> Dict:
+    def fetch_company_news(self, ticker: str) -> Dict[str, Any]:
         """
         Fetch market news for a given ticker symbol (eg. GOOGL, AAPL etc)
         
@@ -142,7 +140,7 @@ class MarketDataService:
             return {"error": "No data found"}
 
 
-    def fetch_topic_news(tickers: List[str]) -> Dict:
+    def fetch_topic_news(self, tickers: List[str]) -> Dict[str, Any]:
         """
         Fetch market news for given topic tickers.\n
         Supported topics (in format "topic name: ticker_name"):
@@ -209,7 +207,7 @@ class MarketDataService:
             return {"error": "No data found"}
 
 
-    def fetch_stock_trends(ticker: str) -> Dict:
+    def fetch_stock_trends(self, ticker: str) -> Dict[str, Any]:
         """
         Fetch recommendation trends for a given ticker symbol (eg. GOOGL, AAPL etc)
         
@@ -232,6 +230,6 @@ class MarketDataService:
             return {"error": "No data found"}
     
 
-@lru_cache
+@lru_cache()
 def get_market_data() -> MarketDataService:
     return MarketDataService()

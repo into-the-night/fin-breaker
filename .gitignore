@@ -5,7 +5,18 @@
 .venv
 
 # Logging
+logs/
 *.log
 
 # Python generated files
 __pycache__/
+
+# tests
+tests/
+
+# VScode
+.vscode
+
+# kiro
+.kiro
+.pytest_cache

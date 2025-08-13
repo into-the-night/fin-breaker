@@ -3,7 +3,7 @@
 
 from functools import lru_cache
 from typing import List, Optional, Dict, Any
-from utils.config import Config
+from app.backend.utils.config import Config
 from google import genai
 import google.genai.types as gemini_types
 import logging
@@ -44,6 +44,8 @@ class LLMService:
         thinking_budget_tokens: Optional[int] = None,
     ) -> Result:
         
+
+        
         try:
         # Only Gemini 2.5 Flash and Pro models support thinking
             if model.startswith("gemini-2.5-"):
@@ -57,16 +59,54 @@ class LLMService:
             else:
                 thinking_config = None
 
+            # Build config parameters conditionally
+            config_params = {}
+            
+            if system:
+                config_params["system_instruction"] = [system]
+            
+            if temperature is not None:
+                config_params["temperature"] = temperature
+                
+            if max_tokens is not None:
+                config_params["max_output_tokens"] = max_tokens
+                
+            if thinking_config is not None:
+                config_params["thinking_config"] = thinking_config
+            
+            # Only include tools if they are provided and not None/empty
+            if tools is not None and len(tools) > 0:
+                # Filter out None values and ensure proper format
+                valid_tools = []
+                for tool in tools:
+                    if tool is not None and isinstance(tool, dict):
+                        # Basic validation for tool structure
+                        if 'function_declarations' in tool or ('Tool' in tool and tool['Tool'] is not None):
+                            valid_tools.append(tool)
+                        else:
+                            logger.warning(f"Skipping invalid tool structure: {tool}")
+                    elif tool is not None:
+                        logger.warning(f"Skipping non-dict tool: {type(tool)}")
+                
+                if valid_tools:
+                    config_params["tools"] = valid_tools
+                else:
+                    logger.debug("No valid tools found, excluding tools from config")
+            
+            # Convert messages to Gemini format
+            if isinstance(messages, list) and len(messages) > 0:
+                # Extract content from the first message (assuming single user message for now)
+                if isinstance(messages[0], dict) and 'content' in messages[0]:
+                    content = messages[0]['content']
+                else:
+                    content = str(messages[0])
+            else:
+                content = str(messages)
+            
             response = await self.client.aio.models.generate_content(
                 model=model,
-                contents=messages,
-                config=gemini_types.GenerateContentConfig(
-                    system_instruction=[system] if system else None,
-                    temperature=temperature if temperature else None,
-                    max_output_tokens=max_tokens,
-                    tools=[tools],
-                    thinking_config=thinking_config,
-                ),
+                contents=content,
+                config=gemini_types.GenerateContentConfig(**config_params),
             )
 
             contents = [
@@ -133,14 +173,16 @@ class LLMService:
     )-> Result:
         tool_names = [t['function_declaration']['name'] for t in tools]
         system_prompt = (
-            "You are a financial analyst assistant. You have access to the following tools: {tool_names}. "
-            "Given the user's question, decide which tools to call to answer it. "
-            "If the question cannot be answered with the tools provided or is irrelevant to Financial Analysis, you can respond with 'I can't answer that question.' "
-            "Otherwise, respond with one or more tool calls."
+            "You are a financial analyst master agent. You have access to the following subagents, each specializing in their analysis: {tool_names}. "
+            "Given the user's query, break down the problem into simpler problems and decide which subagents to call for their respective analysis. "
+            "If the question cannot be answered with the help of subagents or is irrelevant to Financial Analysis, you can respond with 'I can't answer that question.' "
+            "You will generate a plan which MUST contain the task to be performed by the necessary subagents."
+            "These subagents can share memory and progress with each other."
+            "More than one same type of subagents can work at the same time, so break down any complex queries into simpler analysis if deemed necessary."
         ).format(tool_names=", ".join(tool_names))
 
         result = await self.generate(
-            model='gemini-2.5-pro-latest',
+            model='gemini-2.0-flash-001',
             messages=[{
                 "role": "user",
                 "content" : question
@@ -165,7 +207,7 @@ class LLMService:
             "Evaluation (CONTINUE or REPLAN):"
         )
         response = await self.generate(
-            model='gemini-2.5-pro-latest',
+            model='gemini-2.0-flash-001',
             messages=[{
                 "role": "user",
                 "content": prompt
